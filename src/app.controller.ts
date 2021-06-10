@@ -22,7 +22,6 @@ export class AppController implements OnApplicationBootstrap, OnApplicationShutd
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
   ) {
     this.twitchClient = this.configService.get<string>('TWITCH_CLIENT_ID', '');
     this.twitchToken = this.configService.get<string>(
