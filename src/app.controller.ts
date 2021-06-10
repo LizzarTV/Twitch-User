@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  HttpService,
   Logger,
   OnApplicationBootstrap,
   OnApplicationShutdown,
@@ -52,15 +51,17 @@ export class AppController implements OnApplicationBootstrap, OnApplicationShutd
   }
 
   private async getUserInfos(channel: string, username: string): Promise<void> {
-    const data = await this.apiClient.helix.users.getUserByName(username);
-    const follows = await data.follows(channel);
+    const userData = await this.apiClient.helix.users.getUserByName(username);
+    const channelData = await this.apiClient.helix.users.getUserByName(channel);
+    const follows = await userData.follows(channelData.id);
+    //
     const userObj = {
-      id: data.id,
-      username: data.displayName,
-      description: data.description,
-      createDate: data.creationDate,
-      broadcasterType: data.broadcasterType,
-      views: data.views,
+      id: userData.id,
+      username: userData.displayName,
+      description: userData.description,
+      createDate: userData.creationDate,
+      broadcasterType: userData.broadcasterType,
+      views: userData.views,
       followsChannel: follows,
     };
     Logger.debug(userObj, 'TwitchUser');
@@ -69,13 +70,13 @@ export class AppController implements OnApplicationBootstrap, OnApplicationShutd
   @Post('join')
   userJoined(@Body() body: { channel: string; username: string }): void {
     Logger.debug(body, 'Join');
-    this.getUserInfos(body.channel, body.username);
+    this.getUserInfos(body.channel.replace('#', ''), body.username);
   }
 
   @Post('part')
   userPart(@Body() body: { channel: string; username: string }): void {
     Logger.debug(body, 'Part');
-    this.getUserInfos(body.channel, body.username);
+    this.getUserInfos(body.channel.replace('#', ''), body.username);
   }
 
 }
