@@ -75,12 +75,16 @@ export class AppController
   @Post('join')
   userJoined(@Body() body: { channel: string; username: string }): void {
     Logger.debug(body, 'Join');
-    this.getUserInfos(body.channel.replace('#', ''), body.username);
+    this.getUserInfos(body.channel.replace('#', ''), body.username).catch(
+      (error) => Logger.error(error),
+    );
   }
 
   @Post('part')
   userPart(@Body() body: { channel: string; username: string }): void {
     Logger.debug(body, 'Part');
-    this.getUserInfos(body.channel.replace('#', ''), body.username);
+    this.getUserInfos(body.channel.replace('#', ''), body.username).catch(
+      (error) => Logger.error(error),
+    );
   }
 }
