@@ -51,20 +51,31 @@ export class AppController implements OnApplicationBootstrap, OnApplicationShutd
     this.apiClient = new ApiClient({ authProvider: this.authProvider });
   }
 
-  private async getUserInfos(username: string): Promise<void> {
+  private async getUserInfos(channel: string, username: string): Promise<void> {
     const data = await this.apiClient.helix.users.getUserByName(username);
-    Logger.debug(data, 'TwitchUser');
+    const follows = await data.follows(channel);
+    const userObj = {
+      id: data.id,
+      username: data.displayName,
+      description: data.description,
+      createDate: data.creationDate,
+      broadcasterType: data.broadcasterType,
+      views: data.views,
+      followsChannel: follows,
+    };
+    Logger.debug(userObj, 'TwitchUser');
   }
 
   @Post('join')
   userJoined(@Body() body: { channel: string; username: string }): void {
     Logger.debug(body, 'Join');
-    this.getUserInfos(body.username);
+    this.getUserInfos(body.channel, body.username);
   }
 
   @Post('part')
   userPart(@Body() body: { channel: string; username: string }): void {
     Logger.debug(body, 'Part');
+    this.getUserInfos(body.channel, body.username);
   }
 
 }
