@@ -4,24 +4,23 @@ import {
   Logger,
   OnApplicationBootstrap,
   OnApplicationShutdown,
-  Post
-} from "@nestjs/common";
+  Post,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { StaticAuthProvider } from "twitch-auth";
-import { ApiClient } from "twitch";
+import { StaticAuthProvider } from 'twitch-auth';
+import { ApiClient } from 'twitch';
 
 @Controller()
-export class AppController implements OnApplicationBootstrap, OnApplicationShutdown {
-
+export class AppController
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   private authProvider: StaticAuthProvider;
   private apiClient: ApiClient;
 
   private readonly twitchClient: string;
   private readonly twitchToken: string;
 
-  constructor(
-    private readonly configService: ConfigService,
-  ) {
+  constructor(private readonly configService: ConfigService) {
     this.twitchClient = this.configService.get<string>('TWITCH_CLIENT_ID', '');
     this.twitchToken = this.configService.get<string>(
       'TWITCH_ACCESS_TOKEN',
@@ -51,20 +50,26 @@ export class AppController implements OnApplicationBootstrap, OnApplicationShutd
   }
 
   private async getUserInfos(channel: string, username: string): Promise<void> {
-    const userData = await this.apiClient.helix.users.getUserByName(username);
-    const channelData = await this.apiClient.helix.users.getUserByName(channel);
-    const follows = await userData.follows(channelData.id);
-    //
-    const userObj = {
-      id: userData.id,
-      username: userData.displayName,
-      description: userData.description,
-      createDate: userData.creationDate,
-      broadcasterType: userData.broadcasterType,
-      views: userData.views,
-      followsChannel: follows,
-    };
-    Logger.debug(userObj, 'TwitchUser');
+    try {
+      const userData = await this.apiClient.helix.users.getUserByName(username);
+      const channelData = await this.apiClient.helix.users.getUserByName(
+        channel,
+      );
+      const follows = await userData.follows(channelData.id);
+      //
+      const userObj = {
+        id: userData.id,
+        username: userData.displayName,
+        description: userData.description,
+        createDate: userData.creationDate,
+        broadcasterType: userData.broadcasterType,
+        views: userData.views,
+        followsChannel: follows,
+      };
+      Logger.debug(userObj, 'TwitchUser');
+    } catch (e) {
+      Logger.error(e);
+    }
   }
 
   @Post('join')
@@ -78,5 +83,4 @@ export class AppController implements OnApplicationBootstrap, OnApplicationShutd
     Logger.debug(body, 'Part');
     this.getUserInfos(body.channel.replace('#', ''), body.username);
   }
-
 }
