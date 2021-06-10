@@ -51,7 +51,9 @@ export class AppController
 
   private async getUserInfos(channel: string, username: string): Promise<void> {
     try {
-      const userData = await this.apiClient.helix.users.getUserByName(username);
+      const userData = await this.apiClient.helix.users.getUserByName({
+        name: username,
+      });
       const channelData = await this.apiClient.helix.users.getUserByName(
         channel,
       );
